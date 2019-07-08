@@ -1,0 +1,7 @@
+Prima di avviare i programmi bisogna impostare gli argomenti in input.
+Per farlo tasto destro sul progetto ==> Properties ==> Run e inserire in "Arguments" gli argomenti.
+
+
+Il client va avviato passando come argomento "#"
+Il server invece con il comando ""kern.critical" "A critical kernel error" 
+
