@@ -6,6 +6,10 @@
 package com.mycompany.esamesettembreclient;
 
 
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,7 +31,7 @@ import javax.naming.NamingException;
  * @author biar
  */
 public class Client {
-    public static void main(String[] args) throws JMSException, NamingException {
+    public static void main(String[] args) throws JMSException, NamingException, SQLException {
         Context jndiContext = null;
         ConnectionFactory connectionFactory = null;
         Connection connection = null;
@@ -48,14 +52,28 @@ public class Client {
         connection = connectionFactory.createConnection();
         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
         
+        java.sql.Connection conn = DriverManager.getConnection("jdbc:sqlite:/home/biar/flights-database");
+        Statement stat = conn.createStatement();
+        
         MessageConsumer consumer = session.createConsumer(destination);
         connection.start();
+        String flight = null;
+        Boolean status = false;
         while(true){
             Message m = consumer.receive();
             if(m!=null){
                 if (m instanceof TextMessage){
                 TextMessage message = (TextMessage) m;
                 System.out.println("Reading message: " + message.getText());
+                flight = m.getStringProperty("id");
+                status = m.getBooleanProperty("status");
+                PreparedStatement prep = conn.prepareStatement("insert into flight values (?, ?);");
+                prep.setString(1, flight);
+                prep.setBoolean(2, status);
+                prep.addBatch();
+                conn.setAutoCommit(false);
+                prep.executeBatch();
+                conn.setAutoCommit(true);
             }
             
            }else{
